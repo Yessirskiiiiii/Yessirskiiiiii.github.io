@@ -28,8 +28,9 @@
 <meta property="og:description" content="时间复杂度：快（快速排序）些（希尔排序）以 nlogn 的速度归（归并排序）队（堆排序）；稳定性：情绪不稳定，快（快速排序）些（希尔排序）选（简单选择排序）一堆（堆排序）好友来聊天。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F.gif">
+<meta property="og:image" content="https://seazean.oss-cn-beijing.aliyuncs.com/img/Java/Sort-归并排序.png">
 <meta property="article:published_time" content="2022-05-29T08:09:12.000Z">
-<meta property="article:modified_time" content="2022-05-29T09:10:00.196Z">
+<meta property="article:modified_time" content="2022-05-30T08:48:19.179Z">
 <meta property="article:author" content="Three Water">
 <meta property="article:tag" content="排序算法">
 <meta name="twitter:card" content="summary">
@@ -192,10 +193,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-05-29 16:09:12 / 修改时间：17:10:00" itemprop="dateCreated datePublished" datetime="2022-05-29T16:09:12+08:00">2022-05-29</time>
+              <time title="创建时间：2022-05-29 16:09:12" itemprop="dateCreated datePublished" datetime="2022-05-29T16:09:12+08:00">2022-05-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-30 16:48:19" itemprop="dateModified" datetime="2022-05-30T16:48:19+08:00">2022-05-30</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -228,9 +235,32 @@
 <li>递归地（recursive）把小于基准值元素的子数列和大于基准值元素的子数列排序</li>
 </ol>
 <p><img src="/images/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F.gif"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">asdasdasd</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] sortArray(<span class="type">int</span>[] nums) &#123;</span><br><span class="line">        quickSort(nums, <span class="number">0</span>, nums.length - <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> nums;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">quickSort</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> low, <span class="type">int</span> high)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (low &gt;= high) &#123; <span class="comment">// 终止条件</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">pivot</span> <span class="operator">=</span> partition(nums, low, high);</span><br><span class="line">        quickSort(nums, low, pivot - <span class="number">1</span>);</span><br><span class="line">        quickSort(nums, pivot + <span class="number">1</span>, high);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">partition</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> low, <span class="type">int</span> high)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">pivot</span> <span class="operator">=</span> nums[low]; <span class="comment">// 选择第一个元素作为基准点</span></span><br><span class="line">        <span class="keyword">while</span> (low &lt; high) &#123;</span><br><span class="line">            <span class="keyword">while</span> (low &lt; high &amp;&amp; nums[high] &gt;= pivot) &#123;</span><br><span class="line">                high--;</span><br><span class="line">            &#125;</span><br><span class="line">            nums[low] = nums[high];</span><br><span class="line">            <span class="keyword">while</span> (low &lt; high &amp;&amp; nums[low] &lt;= pivot) &#123;</span><br><span class="line">                low++;</span><br><span class="line">            &#125;</span><br><span class="line">            nums[high] = nums[low];</span><br><span class="line">        &#125;</span><br><span class="line">        nums[low] = pivot;</span><br><span class="line">        <span class="keyword">return</span> low;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>时间复杂度：<strong>待排序列越接近无序算法效率越高</strong>，最好情况下为 O(nlogn)，<strong>待排序列越接近有序算法效率越低</strong>，最坏情况下为 O(n²)，平均情况下时间复杂度为 **O(nlogn)**。      </p>
+</li>
+<li><p>空间复杂度：递归需要栈的辅助，**O(nlogn)**。</p>
+</li>
 </ul>
+<h1 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h1><ul>
+<li><p>建立在归并操作上的一种有效的排序算法，该算法是采用分治法的典型的应用。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为二路归并。</p>
+</li>
+<li><p>实现思路：</p>
+<ol>
+<li>一组数据拆分成两个元素相等的子组，并对每一个子组继续拆分，直到拆分后的每个子组的元素个数是 1 为止</li>
+<li>将相邻的两个子组进行合并成一个有序的大组</li>
+<li>不断的重复步骤 2，直到最终只有一个组为止</li>
+</ol>
+<img src="https://seazean.oss-cn-beijing.aliyuncs.com/img/Java/Sort-归并排序.png" style="zoom:50%;" />
 
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] sortArray(<span class="type">int</span>[] nums) &#123;</span><br><span class="line">        mergeSort(nums, <span class="number">0</span>, nums.length - <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> nums;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">mergeSort</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> low, <span class="type">int</span> high)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (low &gt;= high) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> low + ((high - low) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        mergeSort(nums, low, mid); <span class="comment">// 归并排序前半段</span></span><br><span class="line">        mergeSort(nums, mid + <span class="number">1</span>, high); <span class="comment">// 归并排序后半段</span></span><br><span class="line">        merge(nums, low, mid, high); <span class="comment">// 将两段有序段合成一段有序段 </span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">merge</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> low, <span class="type">int</span> mid, <span class="type">int</span> high)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">left</span> <span class="operator">=</span> low, right = mid + <span class="number">1</span>;</span><br><span class="line">        <span class="type">int</span>[] helper = <span class="keyword">new</span> <span class="title class_">int</span>[high - low + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">while</span> (left &lt;= mid &amp;&amp; right &lt;= high) &#123;</span><br><span class="line">            <span class="keyword">if</span> (nums[left] &gt; nums[right]) &#123;</span><br><span class="line">                helper[index++] = nums[right++];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                helper[index++] = nums[left++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (left &lt;= mid) &#123;</span><br><span class="line">            helper[index++] = nums[left++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (right &lt;= high) &#123;</span><br><span class="line">            helper[index++] = nums[right++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; helper.length; i++) &#123; <span class="comment">// 不要忘记将 helper 数组中的值赋给原数组 nums</span></span><br><span class="line">            nums[low++] = helper[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>时间复杂度：最好和最坏的情况下都是 **O(nlogn)**。</p>
+</li>
+<li><p>空间复杂度：需要用 helper 数组临时存储，**O(n)**。</p>
+</li>
+</ul>
+<h1 id="堆排序（TODO）"><a href="#堆排序（TODO）" class="headerlink" title="堆排序（TODO）"></a>堆排序（TODO）</h1>
     </div>
 
     
@@ -310,7 +340,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F"><span class="nav-number">1.</span> <span class="nav-text">快速排序</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F"><span class="nav-number">1.</span> <span class="nav-text">快速排序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F"><span class="nav-number">2.</span> <span class="nav-text">归并排序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%EF%BC%88TODO%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">堆排序（TODO）</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
