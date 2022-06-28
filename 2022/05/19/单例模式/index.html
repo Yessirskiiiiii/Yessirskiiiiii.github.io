@@ -28,7 +28,7 @@
 <meta property="og:description" content="在我们的系统中，有一些对象其实我们只需要一个，比如说：线程池、缓存、对话框、注册表、日志对象、充当打印机、显卡等设备驱动程序的对象。事实上，这一类对象只能有一个实例，如果制造出多个实例就可能会导致一些问题的产生，比如：程序的行为异常、资源使用过量、或者不一致性的结果。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-05-19T02:55:24.000Z">
-<meta property="article:modified_time" content="2022-05-19T08:19:26.635Z">
+<meta property="article:modified_time" content="2022-06-28T16:31:18.982Z">
 <meta property="article:author" content="Three Water">
 <meta property="article:tag" content="单例模式">
 <meta name="twitter:card" content="summary">
@@ -190,10 +190,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-05-19 10:55:24 / 修改时间：16:19:26" itemprop="dateCreated datePublished" datetime="2022-05-19T10:55:24+08:00">2022-05-19</time>
+              <time title="创建时间：2022-05-19 10:55:24" itemprop="dateCreated datePublished" datetime="2022-05-19T10:55:24+08:00">2022-05-19</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-29 00:31:18" itemprop="dateModified" datetime="2022-06-29T00:31:18+08:00">2022-06-29</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -232,6 +238,31 @@
 <li><p>多线程 双重检查锁(DCL) 保证其并发安全</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SingleTon</span>() &#123;</span><br><span class="line">    <span class="comment">// 使用 volatile 使主内存中的 singleTon 对线程可见</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> <span class="type">SingleTon</span> <span class="variable">singleTon</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">SingleTon</span><span class="params">()</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果 singleTon 为空则进行实例化</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> SingleTon <span class="title function_">getSingleTon</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (getSingleTon() == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 如果对象为空，则是第一次实例化，这时锁住对象</span></span><br><span class="line">            <span class="keyword">synchronized</span>(singleTon) &#123;</span><br><span class="line">                <span class="comment">// 第二次判断是否为空，防止多线程操作时，在执行第一次判断后另一个线程完成了实例化</span></span><br><span class="line">                <span class="keyword">if</span> (singleTon == <span class="literal">null</span>) &#123;</span><br><span class="line">            		singleTon = <span class="keyword">new</span> <span class="title class_">SingleTon</span>();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleTon;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果该对象被用于序列化，可以保证对象在序列化前后保持一致</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">readResolve</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> singleTon;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
+<h3 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h3><ul>
+<li>相比于懒汉模式，静态内部类用更少的代码量达到了延迟加载的目的</li>
+<li>静态内部类使用了一个私有的静态内部类，来存储外部类的单例，一般称为 Holder</li>
+<li>利用静态内部类的特性，外部类的 getInstance() 方法，可以直接指向 Holder 持有的对象</li>
+<li><strong>多线程安全</strong>：借用饿汉模式的优势，在加载内部类的同时对 instance 对象进行初始化，因此自始至终类只会加载一次</li>
+<li><strong>优势</strong>：兼顾了懒汉模式的内存优化（使用时才初始化）以及饿汉模式的安全性（不会被反射入侵）</li>
+<li><strong>劣势</strong>：需要多加载一个类；相比于懒汉模式，Holder 创建的单例，只能通过 JVM 去控制生命周期，不能手动 destroy</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">StaticInnerSingleTon</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">StaticInnerSingleTon</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 非空判断 防止反射入侵外部类</span></span><br><span class="line">        <span class="keyword">if</span> (SingleTonHolder.INSTANCE != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">SingleTonHolder</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">StaticInnerSingleTon</span> <span class="variable">INSTANCE</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StaticInnerSingleTon</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> StaticInnerSingleTon <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> SingleTonHolder.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="枚举式"><a href="#枚举式" class="headerlink" title="枚举式"></a>枚举式</h3><p>无论是饿汉式还是懒汉式创建单例模式，都存在<strong>反射</strong>可以进行攻击的问题，而使用枚举方式来创建单例则不会出现这种情况。</p>
+<ul>
+<li><strong>枚举类型是线程安全</strong><ul>
+<li>当一个 Java 类第一次被真正使用到的时候静态资源被初始化、Java 类的加载和初始化过程都是线程安全的（因为虚拟机在加载枚举的类的时候，会使用 ClassLoader 的 loadClass 方法，而这个方法使用同步代码块保证了线程安全）；</li>
+<li>我们定义的一个枚举，在第一次被真正用到的时候，会被虚拟机加载并初始化，而这个初始化过程是线程安全的。</li>
+</ul>
+</li>
+<li><strong>枚举可解决反序列化会破坏单例的问题</strong><ul>
+<li>普通的 Java 类的反序列化过程中，会通过反射调用类的默认构造函数来初始化对象。所以，即使单例中构造函数是私有的，也会被反射给破坏掉。由于反序列化后的对象是重新 new 出来的，所以这就破坏了单例。但是，枚举的反序列化并不是通过反射实现的；</li>
+<li>枚举类型在序列化的时候Java仅仅是将枚举对象的 name 属性输出到结果中，反序列化的时候则是通过<code>java.lang.Enum</code>的<code>valueOf</code>方法来根据名字查找枚举对象。同时，编译器是不允许任何对这种序列化机制定制的，反射在通过 newInstance 创建对象时，会检查该类是否 ENUM 修饰，如果是则抛出异常，反射失败。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">SingletonEnum</span> &#123;</span><br><span class="line">    INSTANCE; <span class="comment">// 属性</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">method</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;work!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -315,7 +346,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="nav-number">1.</span> <span class="nav-text">使用单例模式的好处</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A5%BF%E6%B1%89%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">饿汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">懒汉式</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="nav-number">1.</span> <span class="nav-text">使用单例模式的好处</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A5%BF%E6%B1%89%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">饿汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">懒汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%86%85%E9%83%A8%E7%B1%BB"><span class="nav-number">4.</span> <span class="nav-text">静态内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE%E5%BC%8F"><span class="nav-number">5.</span> <span class="nav-text">枚举式</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -331,20 +362,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
