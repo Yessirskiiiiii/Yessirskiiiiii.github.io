@@ -20,15 +20,19 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="啜泣半岛">
-<meta property="og:url" content="http://example.com/archives/2022/06/index.html">
+  <meta name="description" content="学习分布式任务调度平台 XXL-JOB，其具体任务调度的执行过程，及用到的一些技术栈和优势，并画出其时序图。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xxl-job-源码以及任务调度流程分析">
+<meta property="og:url" content="http://example.com/2022/06/29/xxl-job-%E6%BA%90%E7%A0%81%E4%BB%A5%E5%8F%8A%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="啜泣半岛">
+<meta property="og:description" content="学习分布式任务调度平台 XXL-JOB，其具体任务调度的执行过程，及用到的一些技术栈和优势，并画出其时序图。">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-29T03:31:32.000Z">
+<meta property="article:modified_time" content="2022-06-30T16:20:22.622Z">
 <meta property="article:author" content="Three Water">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/archives/2022/06/">
+<link rel="canonical" href="http://example.com/2022/06/29/xxl-job-%E6%BA%90%E7%A0%81%E4%BB%A5%E5%8F%8A%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/">
 
 
 <script id="page-configurations">
@@ -36,12 +40,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>归档 | 啜泣半岛</title>
+  <title>xxl-job-源码以及任务调度流程分析 | 啜泣半岛</title>
   
 
 
@@ -154,130 +158,98 @@
         <div class="content-wrap">
           
 
-          <div class="content archive">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">嗯..! 目前共计 12 篇日志。 继续努力。</span>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/06/29/xxl-job-%E6%BA%90%E7%A0%81%E4%BB%A5%E5%8F%8A%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.JPG">
+      <meta itemprop="name" content="Three Water">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="啜泣半岛">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          xxl-job-源码以及任务调度流程分析
+        </h1>
+
+        <div class="post-meta">
+		
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-29 11:31:32" itemprop="dateCreated datePublished" datetime="2022-06-29T11:31:32+08:00">2022-06-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-01 00:20:22" itemprop="dateModified" datetime="2022-07-01T00:20:22+08:00">2022-07-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/xxl-job-%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">xxl-job 学习</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">学习分布式任务调度平台 XXL-JOB，其具体任务调度的执行过程，及用到的一些技术栈和优势，并画出其时序图。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2022</span>
-    </div>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-30T23:33:49+08:00"
-              content="2022-06-30">
-          06-30
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/30/%E5%AE%9E%E4%B9%A0%E4%B8%89%E4%B8%AA%E6%9C%88%E8%AE%A1%E5%88%92/" itemprop="url">
-            <span itemprop="name">实习三个月计划</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-29T11:31:32+08:00"
-              content="2022-06-29">
-          06-29
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/29/xxl-job-%E6%BA%90%E7%A0%81%E4%BB%A5%E5%8F%8A%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" itemprop="url">
-            <span itemprop="name">xxl-job-源码以及任务调度流程分析</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-24T11:09:20+08:00"
-              content="2022-06-24">
-          06-24
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/24/hexo%E8%AE%BE%E7%BD%AE%E4%BB%A5%E5%8F%8A%E5%91%BD%E4%BB%A4%E8%AE%B0%E5%BD%95/" itemprop="url">
-            <span itemprop="name">hexo设置以及命令记录</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-24T11:06:01+08:00"
-              content="2022-06-24">
-          06-24
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/24/xxl-job-%E4%BC%A0%E5%8F%82%E9%97%AE%E9%A2%98/" itemprop="url">
-            <span itemprop="name">xxl-job_传参问题</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-23T16:20:05+08:00"
-              content="2022-06-23">
-          06-23
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/23/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/" itemprop="url">
-            <span itemprop="name">滑动窗口</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
+        <h1 id="XXL-JOB-实现任务调度的方式"><a href="#XXL-JOB-实现任务调度的方式" class="headerlink" title="XXL-JOB 实现任务调度的方式"></a>XXL-JOB 实现任务调度的方式</h1><p>启动</p>
 
     </div>
-  </div>
-  
-  
-  
 
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/24/hexo%E8%AE%BE%E7%BD%AE%E4%BB%A5%E5%8F%8A%E5%91%BD%E4%BB%A4%E8%AE%B0%E5%BD%95/" rel="prev" title="hexo设置以及命令记录">
+      <i class="fa fa-chevron-left"></i> hexo设置以及命令记录
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/30/%E5%AE%9E%E4%B9%A0%E4%B8%89%E4%B8%AA%E6%9C%88%E8%AE%A1%E5%88%92/" rel="next" title="实习三个月计划">
+      实习三个月计划 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
   
 
 
@@ -330,6 +302,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#XXL-JOB-%E5%AE%9E%E7%8E%B0%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">XXL-JOB 实现任务调度的方式</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
