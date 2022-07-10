@@ -20,16 +20,22 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="article">
+  <meta name="description" content="Netty 是一个异步的、基于事件驱动的网络应用框架，用于快速开发可维护、高性能的网络服务器和客户端。">
+<meta property="og:type" content="article">
 <meta property="og:title" content="Java网络编程-Netty">
 <meta property="og:url" content="http://example.com/2022/07/08/Java%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-Netty/index.html">
 <meta property="og:site_name" content="啜泣半岛">
+<meta property="og:description" content="Netty 是一个异步的、基于事件驱动的网络应用框架，用于快速开发可维护、高性能的网络服务器和客户端。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/Netty-%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%9E%8B.png">
+<meta property="og:image" content="http://example.com/images/Netty-Channel%E4%B8%8EPipeline.png">
+<meta property="og:image" content="http://example.com/images/Netty-%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86.png">
 <meta property="article:published_time" content="2022-07-08T07:22:13.000Z">
-<meta property="article:modified_time" content="2022-07-08T07:22:52.101Z">
+<meta property="article:modified_time" content="2022-07-10T13:34:49.144Z">
 <meta property="article:author" content="Three Water">
 <meta property="article:tag" content="Netty">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/Netty-%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%9E%8B.png">
 
 <link rel="canonical" href="http://example.com/2022/07/08/Java%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-Netty/">
 
@@ -188,10 +194,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-08 15:22:13 / 修改时间：15:22:52" itemprop="dateCreated datePublished" datetime="2022-07-08T15:22:13+08:00">2022-07-08</time>
+              <time title="创建时间：2022-07-08 15:22:13" itemprop="dateCreated datePublished" datetime="2022-07-08T15:22:13+08:00">2022-07-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-10 21:34:49" itemprop="dateModified" datetime="2022-07-10T21:34:49+08:00">2022-07-10</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -203,6 +215,7 @@
             </span>
 
           
+            <div class="post-description">Netty 是一个异步的、基于事件驱动的网络应用框架，用于快速开发可维护、高性能的网络服务器和客户端。</div>
 
         </div>
       </header>
@@ -213,7 +226,64 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h1 id="一-基本介绍"><a href="#一-基本介绍" class="headerlink" title="一. 基本介绍"></a>一. 基本介绍</h1><p>Netty 是一个异步的、基于事件驱动的网络应用框架，用于快速开发可维护、高性能的网络服务器和客户端。</p>
+<p>Netty 主要基于主从 Reactors 多线程模型做了一定的改进，Netty 的工作架构图：</p>
+<p><img src="/images/Netty-%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%9E%8B.png"></p>
+<p><strong>工作流程：</strong></p>
+<ol>
+<li><p>Netty 抽象出两组线程池 BossGroup 专门负责接收客户端的连接，WorkerGroup 专门负责网络的读写</p>
+</li>
+<li><p>BossGroup 和 WorkerGroup 类型都是 NioEventLoopGroup，该 Group 相当于一个事件循环组，含有多个事件循环，每一个事件循环是 NioEventLoop，所以可以有多个线程</p>
+</li>
+<li><p>NioEventLoop 表示一个<strong>循环处理任务的线程</strong>，每个 NioEventLoop 都有一个 Selector，用于监听绑定在其上的 Socket 的通讯</p>
+</li>
+<li><p>每个 Boss NioEventLoop 循环执行的步骤：</p>
+<ul>
+<li>轮询 accept 事件</li>
+<li>处理 accept 事件，与 client 建立连接，生成 NioScocketChannel，并将其<strong>注册到某个 Worker 中</strong>的某个 NioEventLoop 上的 Selector，连接就与 NioEventLoop 绑定</li>
+<li>处理任务队列的任务，即 runAllTasks</li>
+</ul>
+</li>
+<li><p>每个 Worker NioEventLoop 循环执行的步骤：</p>
+<ul>
+<li>轮询 read、write 事件</li>
+<li>处理 I&#x2F;O 事件，即 read，write 事件，在对应 NioSocketChannel 处理</li>
+<li>处理任务队列的任务，即 runAllTasks</li>
+</ul>
+</li>
+<li><p>每个 Worker NioEventLoop 处理业务时，会使用 pipeline（管道），pipeline 中包含了 channel，即通过 pipeline 可以获取到对应通道，管道中维护了很多的处理器 Handler</p>
+<p><img src="/images/Netty-Channel%E4%B8%8EPipeline.png"></p>
+</li>
+</ol>
+<h1 id="二-基本实现"><a href="#二-基本实现" class="headerlink" title="二. 基本实现"></a>二. 基本实现</h1><p>开发一个简单的服务器端和客户端</p>
+<ul>
+<li>客户端向服务器端发送 hello</li>
+<li>服务器仅接收，不返回</li>
+</ul>
+<p><strong>服务器端</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloServer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// 1. 启动器，负责组装 netty 组件，启动服务器</span></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">ServerBootstrap</span>()</span><br><span class="line">                <span class="comment">// 2. BossEventLoop, WorkerEventLoop(selector, thread), group 组</span></span><br><span class="line">                .group(<span class="keyword">new</span> <span class="title class_">NioEventLoopGroup</span>())</span><br><span class="line">                <span class="comment">// 3. 选择 服务器的 ServerSocketChannel 实现</span></span><br><span class="line">                .channel(NioServerSocketChannel.class)</span><br><span class="line">                <span class="comment">// 4. boss 负责处理连接 worker(child) 负责处理读写，决定了 worker(child) 能执行哪些操作（handler）</span></span><br><span class="line">                .childHandler(</span><br><span class="line">                        <span class="comment">// 5. channel 代表和客户端进行数据读写的通道 Initializer 初始化，负责添加别的 handler</span></span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">ChannelInitializer</span>&lt;NioSocketChannel&gt;() &#123;</span><br><span class="line">                            <span class="meta">@Override</span></span><br><span class="line">                            <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">initChannel</span><span class="params">(NioSocketChannel nioSocketChannel)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                                <span class="comment">// 6. 添加具体 handler</span></span><br><span class="line">                                nioSocketChannel.pipeline().addLast(<span class="keyword">new</span> <span class="title class_">StringDecoder</span>()); <span class="comment">// 将 ByteBuf 转换为字符串</span></span><br><span class="line">                                nioSocketChannel.pipeline().addLast(<span class="keyword">new</span> <span class="title class_">ChannelInboundHandlerAdapter</span>() &#123; <span class="comment">// 自定义 handler</span></span><br><span class="line">                                    <span class="meta">@Override</span> <span class="comment">// 读事件</span></span><br><span class="line">                                    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                                        <span class="comment">// 打印上一步转换好的字符串</span></span><br><span class="line">                                        System.out.println(msg);</span><br><span class="line">                                    &#125;</span><br><span class="line">                                &#125;);</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;)</span><br><span class="line">                <span class="comment">// 7. 绑定监听端口</span></span><br><span class="line">                .bind(<span class="number">8080</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>客户端</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloClient</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="comment">// 1. 启动类</span></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Bootstrap</span>()</span><br><span class="line">                <span class="comment">// 2. 添加 EventLoop</span></span><br><span class="line">                .group(<span class="keyword">new</span> <span class="title class_">NioEventLoopGroup</span>())</span><br><span class="line">                <span class="comment">// 3. 选择客户端 channel 实现</span></span><br><span class="line">                .channel(NioSocketChannel.class)</span><br><span class="line">                <span class="comment">// 4. 添加处理器</span></span><br><span class="line">                .handler(<span class="keyword">new</span> <span class="title class_">ChannelInitializer</span>&lt;NioSocketChannel&gt;() &#123;</span><br><span class="line">                    <span class="meta">@Override</span> <span class="comment">// 在建立连接后被调用</span></span><br><span class="line">                    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">initChannel</span><span class="params">(NioSocketChannel nioSocketChannel)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                        nioSocketChannel.pipeline().addLast(<span class="keyword">new</span> <span class="title class_">StringEncoder</span>());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;)</span><br><span class="line">                <span class="comment">// 5. 连接到服务器</span></span><br><span class="line">                .connect(<span class="keyword">new</span> <span class="title class_">InetSocketAddress</span>(<span class="string">&quot;localhost&quot;</span>, <span class="number">8080</span>))</span><br><span class="line">                .sync()</span><br><span class="line">                .channel()</span><br><span class="line">                <span class="comment">// 6. 向服务器发送数据</span></span><br><span class="line">                .writeAndFlush(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>流程梳理</strong></p>
+<p><img src="/images/Netty-%E6%B5%81%E7%A8%8B%E6%A2%B3%E7%90%86.png"></p>
+<ul>
+<li>把 channel 理解为数据的通道</li>
+<li>把 msg 理解为流动的数据，最开始输入是 ByteBuf，但经过 pipeline 的加工，会变成其它类型对象，最后输出又变成 ByteBuf</li>
+<li>把 handler 理解为数据的处理工序<ul>
+<li>工序有多道，合在一起就是 pipeline，pipeline 负责发布事件（读、读取完成…）传播给每个 handler， handler 对自己感兴趣的事件进行处理（重写了相应事件处理方法）</li>
+<li>handler 分 Inbound 和 Outbound 两类</li>
+</ul>
+</li>
+<li>把 eventLoop 理解为处理数据的工人<ul>
+<li>工人可以管理多个 channel 的 io 操作，并且一旦工人负责了某个 channel，就要负责到底（绑定）</li>
+<li>工人既可以执行 io 操作，也可以进行任务处理，每位工人有任务队列，队列里可以堆放多个 channel 的待处理任务，任务分为普通任务、定时任务</li>
+<li>工人按照 pipeline 顺序，依次按照 handler 的规划（代码）处理数据，可以为每道工序指定不同的工人</li>
+</ul>
+</li>
+</ul>
+
     </div>
 
     
@@ -293,6 +363,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80-%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">一. 基本介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C-%E5%9F%BA%E6%9C%AC%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">二. 基本实现</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
