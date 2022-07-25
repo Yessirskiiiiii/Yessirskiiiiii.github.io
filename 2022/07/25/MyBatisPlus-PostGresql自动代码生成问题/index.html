@@ -20,15 +20,19 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="啜泣半岛">
-<meta property="og:url" content="http://example.com/archives/2022/06/index.html">
+  <meta name="description" content="利用 mybatis-plus 自动生成 postgresql 数据库的代码时遇到的问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MyBatisPlus+postgresql自动代码生成问题">
+<meta property="og:url" content="http://example.com/2022/07/25/MyBatisPlus-PostGresql%E8%87%AA%E5%8A%A8%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E9%97%AE%E9%A2%98/index.html">
 <meta property="og:site_name" content="啜泣半岛">
+<meta property="og:description" content="利用 mybatis-plus 自动生成 postgresql 数据库的代码时遇到的问题。">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-25T07:44:11.000Z">
+<meta property="article:modified_time" content="2022-07-25T09:09:51.286Z">
 <meta property="article:author" content="Three Water">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/archives/2022/06/">
+<link rel="canonical" href="http://example.com/2022/07/25/MyBatisPlus-PostGresql%E8%87%AA%E5%8A%A8%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E9%97%AE%E9%A2%98/">
 
 
 <script id="page-configurations">
@@ -36,12 +40,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>归档 | 啜泣半岛</title>
+  <title>MyBatisPlus+postgresql自动代码生成问题 | 啜泣半岛</title>
   
 
 
@@ -154,110 +158,94 @@
         <div class="content-wrap">
           
 
-          <div class="content archive">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">嗯..! 目前共计 13 篇日志。 继续努力。</span>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/07/25/MyBatisPlus-PostGresql%E8%87%AA%E5%8A%A8%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.JPG">
+      <meta itemprop="name" content="Three Water">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="啜泣半岛">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MyBatisPlus+postgresql自动代码生成问题
+        </h1>
+
+        <div class="post-meta">
+		
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-25 15:44:11 / 修改时间：17:09:51" itemprop="dateCreated datePublished" datetime="2022-07-25T15:44:11+08:00">2022-07-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95/" itemprop="url" rel="index"><span itemprop="name">问题记录</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">利用 mybatis-plus 自动生成 postgresql 数据库的代码时遇到的问题。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2022</span>
-    </div>
+        <h1 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h1><p>利用 mybatis-plus 自动生成 postgresql 数据库的代码，运行配置文件，但没生成文件，看运行日志是走的 public 作为模式名，更改配置文件仍无效果</p>
+<h1 id="原因分析："><a href="#原因分析：" class="headerlink" title="原因分析："></a>原因分析：</h1><p>源码显示如果不在配置类中设置 SchemaName，mybatis-plus 会 默认使用 public 作为模式名，因此表不在 public 中的话，则会找不到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取数据库默认schema</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 默认schema</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@since</span> 3.5.0</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    <span class="keyword">protected</span> String <span class="title function_">getDefaultSchema</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">DbType</span> <span class="variable">dbType</span> <span class="operator">=</span> getDbType();</span><br><span class="line">        <span class="type">String</span> <span class="variable">schema</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (DbType.POSTGRE_SQL == dbType) &#123;</span><br><span class="line">            <span class="comment">//pg 默认 schema=public</span></span><br><span class="line">            schema = <span class="string">&quot;public&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.KINGBASE_ES == dbType) &#123;</span><br><span class="line">            <span class="comment">//kingbase 默认 schema=PUBLIC</span></span><br><span class="line">            schema = <span class="string">&quot;PUBLIC&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.DB2 == dbType) &#123;</span><br><span class="line">            <span class="comment">//db2 默认 schema=current schema</span></span><br><span class="line">            schema = <span class="string">&quot;current schema&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.ORACLE == dbType) &#123;</span><br><span class="line">            <span class="comment">//oracle 默认 schema=username</span></span><br><span class="line">            schema = <span class="built_in">this</span>.username.toUpperCase();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> schema;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-29T11:31:32+08:00"
-              content="2022-06-29">
-          06-29
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/29/xxl-job-%E6%BA%90%E7%A0%81%E4%BB%A5%E5%8F%8A%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" itemprop="url">
-            <span itemprop="name">xxl-job-源码以及任务调度流程分析</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-24T11:09:20+08:00"
-              content="2022-06-24">
-          06-24
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/24/hexo%E8%AE%BE%E7%BD%AE%E4%BB%A5%E5%8F%8A%E5%91%BD%E4%BB%A4%E8%AE%B0%E5%BD%95/" itemprop="url">
-            <span itemprop="name">hexo设置以及命令记录</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-24T11:06:01+08:00"
-              content="2022-06-24">
-          06-24
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/24/xxl-job-%E4%BC%A0%E5%8F%82%E9%97%AE%E9%A2%98/" itemprop="url">
-            <span itemprop="name">xxl-job_传参问题</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2022-06-23T16:20:05+08:00"
-              content="2022-06-23">
-          06-23
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2022/06/23/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/" itemprop="url">
-            <span itemprop="name">滑动窗口</span>
-          </a>
-      </div>
-
-    </header>
-  </article>
-
+<h1 id="解决方案："><a href="#解决方案：" class="headerlink" title="解决方案："></a>解决方案：</h1><p>在配置方法中设置自己的 SchemaName</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">DataSourceConfig</span></span><br><span class="line">	...</span><br><span class="line">	.schema(<span class="string">&quot;your shchemaName&quot;</span>)</span><br><span class="line">	...</span><br><span class="line">	.build();</span><br></pre></td></tr></table></figure>
 
     </div>
-  </div>
-  
-  
-  
 
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/08/Java%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-Netty/" rel="prev" title="Java网络编程-Netty">
+      <i class="fa fa-chevron-left"></i> Java网络编程-Netty
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
   
 
 
@@ -310,6 +298,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">问题描述：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">原因分析：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">解决方案：</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
