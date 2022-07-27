@@ -28,7 +28,7 @@
 <meta property="og:description" content="利用 mybatis-plus 自动生成 postgresql 数据库的代码时遇到的问题。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-07-25T07:44:11.000Z">
-<meta property="article:modified_time" content="2022-07-25T09:09:51.286Z">
+<meta property="article:modified_time" content="2022-07-26T09:08:02.684Z">
 <meta property="article:author" content="Three Water">
 <meta name="twitter:card" content="summary">
 
@@ -189,10 +189,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-07-25 15:44:11 / 修改时间：17:09:51" itemprop="dateCreated datePublished" datetime="2022-07-25T15:44:11+08:00">2022-07-25</time>
+              <time title="创建时间：2022-07-25 15:44:11" itemprop="dateCreated datePublished" datetime="2022-07-25T15:44:11+08:00">2022-07-25</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-26 17:08:02" itemprop="dateModified" datetime="2022-07-26T17:08:02+08:00">2022-07-26</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -215,12 +221,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h1><p>利用 mybatis-plus 自动生成 postgresql 数据库的代码，运行配置文件，但没生成文件，看运行日志是走的 public 作为模式名，更改配置文件仍无效果</p>
-<h1 id="原因分析："><a href="#原因分析：" class="headerlink" title="原因分析："></a>原因分析：</h1><p>源码显示如果不在配置类中设置 SchemaName，mybatis-plus 会 默认使用 public 作为模式名，因此表不在 public 中的话，则会找不到</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取数据库默认schema</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 默认schema</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@since</span> 3.5.0</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    <span class="keyword">protected</span> String <span class="title function_">getDefaultSchema</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">DbType</span> <span class="variable">dbType</span> <span class="operator">=</span> getDbType();</span><br><span class="line">        <span class="type">String</span> <span class="variable">schema</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (DbType.POSTGRE_SQL == dbType) &#123;</span><br><span class="line">            <span class="comment">//pg 默认 schema=public</span></span><br><span class="line">            schema = <span class="string">&quot;public&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.KINGBASE_ES == dbType) &#123;</span><br><span class="line">            <span class="comment">//kingbase 默认 schema=PUBLIC</span></span><br><span class="line">            schema = <span class="string">&quot;PUBLIC&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.DB2 == dbType) &#123;</span><br><span class="line">            <span class="comment">//db2 默认 schema=current schema</span></span><br><span class="line">            schema = <span class="string">&quot;current schema&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.ORACLE == dbType) &#123;</span><br><span class="line">            <span class="comment">//oracle 默认 schema=username</span></span><br><span class="line">            schema = <span class="built_in">this</span>.username.toUpperCase();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> schema;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="解决方案："><a href="#解决方案：" class="headerlink" title="解决方案："></a>解决方案：</h1><p>在配置方法中设置自己的 SchemaName</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">DataSourceConfig</span></span><br><span class="line">	...</span><br><span class="line">	.schema(<span class="string">&quot;your shchemaName&quot;</span>)</span><br><span class="line">	...</span><br><span class="line">	.build();</span><br></pre></td></tr></table></figure>
+        <h1 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h1><ul>
+<li>利用 mybatis-plus 自动生成 postgresql 数据库的代码，运行配置文件，但没生成文件，看运行日志是走的 public 作为模式名，更改配置文件仍无效果</li>
+</ul>
+<h1 id="原因分析："><a href="#原因分析：" class="headerlink" title="原因分析："></a>原因分析：</h1><ul>
+<li><p>源码显示如果不在配置类中设置 SchemaName，mybatis-plus 会 默认使用 public 作为模式名，因此表不在 public 中的话，则会找不到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取数据库默认schema</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 默认schema</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@since</span> 3.5.0</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    <span class="keyword">protected</span> String <span class="title function_">getDefaultSchema</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">DbType</span> <span class="variable">dbType</span> <span class="operator">=</span> getDbType();</span><br><span class="line">        <span class="type">String</span> <span class="variable">schema</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (DbType.POSTGRE_SQL == dbType) &#123;</span><br><span class="line">            <span class="comment">//pg 默认 schema=public</span></span><br><span class="line">            schema = <span class="string">&quot;public&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.KINGBASE_ES == dbType) &#123;</span><br><span class="line">            <span class="comment">//kingbase 默认 schema=PUBLIC</span></span><br><span class="line">            schema = <span class="string">&quot;PUBLIC&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.DB2 == dbType) &#123;</span><br><span class="line">            <span class="comment">//db2 默认 schema=current schema</span></span><br><span class="line">            schema = <span class="string">&quot;current schema&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DbType.ORACLE == dbType) &#123;</span><br><span class="line">            <span class="comment">//oracle 默认 schema=username</span></span><br><span class="line">            schema = <span class="built_in">this</span>.username.toUpperCase();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> schema;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="解决方案："><a href="#解决方案：" class="headerlink" title="解决方案："></a>解决方案：</h1><ul>
+<li><p>在配置方法中设置自己的 SchemaName</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">DataSourceConfig</span></span><br><span class="line">	...</span><br><span class="line">	.schema(<span class="string">&quot;your shchemaName&quot;</span>)</span><br><span class="line">	...</span><br><span class="line">	.build();</span><br></pre></td></tr></table></figure></li>
+</ul>
 
     </div>
 
@@ -239,7 +250,10 @@
     <a href="/2022/07/08/Java%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-Netty/" rel="prev" title="Java网络编程-Netty">
       <i class="fa fa-chevron-left"></i> Java网络编程-Netty
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/26/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" rel="next" title="代理模式">
+      代理模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -314,7 +328,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -327,7 +341,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
