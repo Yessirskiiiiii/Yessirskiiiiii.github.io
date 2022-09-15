@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/dog.svg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/dog.svg">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="在写 RPC 启动项的时候遇到了负载均衡算法的问题，因此在这系统性地整理一下这些算法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="负载均衡算法">
+<meta property="og:url" content="http://example.com/2022/09/08/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="啜泣半岛">
+<meta property="og:description" content="在写 RPC 启动项的时候遇到了负载均衡算法的问题，因此在这系统性地整理一下这些算法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-08T07:17:29.000Z">
+<meta property="article:modified_time" content="2022-09-15T13:01:22.262Z">
+<meta property="article:author" content="Three Water">
+<meta property="article:tag" content="负载均衡">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/09/08/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%AE%97%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>负载均衡算法 | 啜泣半岛</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">啜泣半岛</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/09/08/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%AE%97%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.JPG">
+      <meta itemprop="name" content="Three Water">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="啜泣半岛">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          负载均衡算法
+        </h1>
+
+        <div class="post-meta">
+		
+		  
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-09-08 15:17:29" itemprop="dateCreated datePublished" datetime="2022-09-08T15:17:29+08:00">2022-09-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-09-15 21:01:22" itemprop="dateModified" datetime="2022-09-15T21:01:22+08:00">2022-09-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" itemprop="url" rel="index"><span itemprop="name">微服务</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">在写 RPC 启动项的时候遇到了负载均衡算法的问题，因此在这系统性地整理一下这些算法。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="负载均衡概述"><a href="#负载均衡概述" class="headerlink" title="负载均衡概述"></a>负载均衡概述</h1><p>负载均衡（Load Balance），意思是将负载（如前端的访问请求）进行平衡、（通过负载均衡算法）分摊到多个操作单元（服务器，中间件）上进行执行。是解决高性能，单点故障（高可用），扩展性（水平伸缩）的终极解决方案。可以理解为，负载均衡是高可用和高并发共同使用的一种技术。</p>
+<h2 id="负载均衡的作用"><a href="#负载均衡的作用" class="headerlink" title="负载均衡的作用"></a>负载均衡的作用</h2><ol>
+<li>增加吞吐量，解决并发压力（高性能）</li>
+<li>提供故障转移（高可用）</li>
+<li>通过添加或减少服务器数量，提供网站伸缩性（扩展性）</li>
+<li>安全防护（负载均衡设备上做一些过滤，黑白名单等处理）</li>
+</ol>
+<h2 id="一些常见的负载均衡"><a href="#一些常见的负载均衡" class="headerlink" title="一些常见的负载均衡"></a>一些常见的负载均衡</h2><h3 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h3><ul>
+<li>轮询</li>
+<li>加权轮询</li>
+<li>IP 哈希<ul>
+<li>依据发出请求的客户端 IP 的 hash 值来分配服务器，该算法可以保证同 IP 发出的请求映射到同一服务器，或者具有相同 hash 值的不同 IP 映射到同一服务器，在一定程度上解决了集群部署环境下 Session 不共享的问题</li>
+</ul>
+</li>
+<li>URL hash<ul>
+<li>根据请求的 URL 的 hash 值来分配服务器。该算法的特点是，相同 URL 的请求会分配给固定的服务器，当存在缓存的时候，效率一般较高</li>
+</ul>
+</li>
+<li>最小连接数<ul>
+<li>当有新的请求出现时，遍历服务器节点列表并选取其中连接数最小的一台服务器来响应当前请求。连接数可以理解为当前处理的请求数</li>
+</ul>
+</li>
+</ul>
+<h3 id="Dubbo"><a href="#Dubbo" class="headerlink" title="Dubbo"></a>Dubbo</h3><ul>
+<li>加权随机</li>
+<li>轮询</li>
+<li>最少活跃调用数<ul>
+<li>如果每个提供者的活跃数相同，则随机选择一个</li>
+<li>在每个服务提供者里维护着一个活跃数计数器，用来记录当前同时处理请求的个数，也就是并发处理任务的个数。这个值越小，说明当前服务提供者处理的速度越快或者当前机器的负载比较低，所以路由选择时就选择该活跃度最小的机器</li>
+</ul>
+</li>
+<li>一致性 Hash<ul>
+<li>相同参数的请求总是发到同一提供者，当某一台提供者机器宕机时，原本发往该提供者的请求，将基于虚拟节点平摊给其他提供者，这样就不会引起剧烈变动</li>
+</ul>
+</li>
+</ul>
+<h3 id="Feign（集成了-Ribbon，主要是通过-Ribbon-来实现负载均衡）"><a href="#Feign（集成了-Ribbon，主要是通过-Ribbon-来实现负载均衡）" class="headerlink" title="Feign（集成了 Ribbon，主要是通过 Ribbon 来实现负载均衡）"></a>Feign（集成了 Ribbon，主要是通过 Ribbon 来实现负载均衡）</h3><ul>
+<li>轮询</li>
+<li>随机</li>
+<li>最小连接</li>
+<li>加权</li>
+<li>重试</li>
+</ul>
+<h1 id="实现负载均衡算法"><a href="#实现负载均衡算法" class="headerlink" title="实现负载均衡算法"></a>实现负载均衡算法</h1><p>定义负载均衡算法接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">LoadBalance</span> &#123;</span><br><span class="line">    Service <span class="title function_">chooseOne</span><span class="params">(List&lt;Service&gt; services)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Service 类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Service</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Integer weight;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Service</span><span class="params">(String name, Integer weight)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.weight = weight;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Integer <span class="title function_">getWeight</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> weight;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setWeight</span><span class="params">(Integer weight)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.weight = weight;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="完全随机"><a href="#完全随机" class="headerlink" title="完全随机"></a>完全随机</h2><p>从服务器列表随机选 1 个服务器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RandomLoadBalance</span> <span class="keyword">implements</span> <span class="title class_">LoadBalance</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Service <span class="title function_">chooseOne</span><span class="params">(List&lt;Service&gt; services)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> services.get(random.nextInt(services.size()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试随机选 10 次</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">test</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">Service</span> <span class="variable">service1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Service</span>(<span class="string">&quot;A&quot;</span>, <span class="number">2</span>);</span><br><span class="line">        <span class="type">Service</span> <span class="variable">service2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Service</span>(<span class="string">&quot;B&quot;</span>, <span class="number">3</span>);</span><br><span class="line">        <span class="type">Service</span> <span class="variable">service3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Service</span>(<span class="string">&quot;C&quot;</span>, <span class="number">5</span>);</span><br><span class="line">        ArrayList&lt;Service&gt; services = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        Collections.addAll(services, service1, service2, service3);</span><br><span class="line"></span><br><span class="line">        <span class="type">RandomLoadBalance</span> <span class="variable">randomLoadBalance</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RandomLoadBalance</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            System.out.print(randomLoadBalance.chooseOne(services).getName() + <span class="string">&quot;   &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">C   C   B   B   B   C   A   B   A   B</span><br></pre></td></tr></table></figure>
+
+<p>优点：服务器请求数目相同；实现简单、高效；易水平扩展</p>
+<p>缺点：服务器压力不一样，不适合服务器配置不同的情况；请求到目的结点的不确定，造成其无法适用于有写操作的场景</p>
+<h2 id="加权随机"><a href="#加权随机" class="headerlink" title="加权随机"></a>加权随机</h2><p>由于完全随机算法下每个服务器的访问概率大致相同，所以如果部分服务器性能不一致的话，容易导致性能差的服务器压力过大，所以要根据服务器性能不一致的情况，给性能好的服务器多处理请求，给差的少分配请求（能者多劳），所以就需要在随机算法的基础上给每台服务器设置权重，延伸为加权随机算法</p>
+<p>在依据权重找对应的服务时，随机数 - 权重值，如果小于 0，说明次数在权重值的范围内，如果不小于 0，说明没在这个区间内，就要往后面去找</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WeightRandomLoadBalance</span> <span class="keyword">implements</span> <span class="title class_">LoadBalance</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Service <span class="title function_">chooseOne</span><span class="params">(List&lt;Service&gt; services)</span> &#123;</span><br><span class="line">        <span class="comment">// 计算列表服务的权重总值</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">sumWeight</span> <span class="operator">=</span> services.stream().mapToInt(Service::getWeight).sum();</span><br><span class="line">        <span class="comment">// 随机获得权重总值范围内的一个数</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> random.nextInt(sumWeight);</span><br><span class="line">        <span class="keyword">for</span> (Service service : services) &#123;</span><br><span class="line">            <span class="comment">// 如果该服务权重大于随机索引，返回这个服务</span></span><br><span class="line">            <span class="keyword">if</span> (service.getWeight() &gt; index)&#123;</span><br><span class="line">                <span class="keyword">return</span> service;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 索引 = 当前索引 - 当前服务的权重</span></span><br><span class="line">            index -= service.getWeight();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="轮询"><a href="#轮询" class="headerlink" title="轮询"></a>轮询</h2><p>按顺序依次调度每个服务器，轮询算法与服务器权重没有关系，每个服务器都会有序地被轮询到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RoundLoadBalance</span> <span class="keyword">implements</span> <span class="title class_">LoadBalance</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> index;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> Service <span class="title function_">chooseOne</span><span class="params">(List&lt;Service&gt; services)</span> &#123;</span><br><span class="line">        <span class="comment">// 加锁防止多线程情况下，index 超出 services.size()</span></span><br><span class="line">        <span class="keyword">if</span> (index == services.size()) &#123;</span><br><span class="line">            index = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> services.get(index++);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A   B   C   A   B   C   A   B   C   A</span><br></pre></td></tr></table></figure>
+
+<p>优点：服务器请求数目相同；实现简单、高效；易水平扩展</p>
+<p>缺点：服务器压力不一样，不适合服务器配置不同的情况；请求到目的结点的不确定，造成其无法适用于有写操作的场景</p>
+<h2 id="加权轮询"><a href="#加权轮询" class="headerlink" title="加权轮询"></a>加权轮询</h2><p>与加权随机类似，根据权重来轮询请求服务</p>
+<p>请求的次数 - 权重值，如果小于 0，说明次数在权重值的范围内，如果不小于 0，说明没在这个区间内，就要往后面去找</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WeightRoundLoadBalance</span> <span class="keyword">implements</span> <span class="title class_">LoadBalance</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> index;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Service <span class="title function_">chooseOne</span><span class="params">(List&lt;Service&gt; services)</span> &#123;</span><br><span class="line">        <span class="comment">// 计算列表服务的权重总值</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">sumWeight</span> <span class="operator">=</span> services.stream().mapToInt(Service::getWeight).sum();</span><br><span class="line">        <span class="comment">// 轮询索引，超出则取模</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">number</span> <span class="operator">=</span> (index++) % sumWeight;</span><br><span class="line">        <span class="keyword">for</span> (Service service : services) &#123;</span><br><span class="line">            <span class="comment">// 如果该服务权重大于该索引，返回这个服务</span></span><br><span class="line">            <span class="keyword">if</span> (service.getWeight() &gt; number)&#123;</span><br><span class="line">                <span class="keyword">return</span> service;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 索引 = 当前索引 - 当前服务的权重</span></span><br><span class="line">            number -= service.getWeight();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A   A   B   B   B   C   C   C   C   C</span><br></pre></td></tr></table></figure>
+
+<p>优点：可以将不同机器的性能问题纳入到考量范围，集群性能最优最大化</p>
+<p>缺点：生产环境复杂多变，服务器抗压能力也无法精确估算，静态算法导致无法实时动态调整节点权重，只能粗糙优化；同时根据测试结果来看，该算法先轮询 A 服务器，再轮询 B 服务器，再轮询 C 服务器，所以他在一段时间内去请求的服务器永远是一个，当某个服务器权重过大会造成该服务器压力比较大</p>
+<h2 id="平滑加权轮询"><a href="#平滑加权轮询" class="headerlink" title="平滑加权轮询"></a>平滑加权轮询</h2><p>平滑加权轮询会把轮询的请求打散，让每个服务器都比较均衡地获得请求，避免了同一个时刻大量请求打入，使请求更加 <strong>平衡</strong></p>
+<p>假设有 N 台服务器 S &#x3D; {S0, S1, S2, …, Sn}，默认权重为 W &#x3D; {W0, W1, W2, …, Wn}，当前权重为 CW &#x3D; {CW0, CW1, CW2, …, CWn}。在该算法中有两个权重，默认权重表示服务器的原始权重，当前权重表示每次访问后重新计算的权重，当前权重的出初始值为默认权重值，当前权重值最大的服务器为 maxWeightService，所有默认权重之和为 weightSum，服务器列表为 list，算法可以描述为：</p>
+<ol>
+<li>找出当前权重值最大的服务器 maxWeightService；</li>
+<li>计算 {W0, W1, W2, …, Wn} 之和 weightSum；</li>
+<li>将 maxWeightService.CW &#x3D; maxWeightService.CW - weightSum；</li>
+<li>重新计算 {S0, S1, S2, …, Sn} 的当前权重 CW，计算公式为 Sn.CW &#x3D; Sn.CW + Sn.Wn</li>
+<li>返回 maxWeightService</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SmoothWeightRoundLoadBalance</span> <span class="keyword">implements</span> <span class="title class_">LoadBalance</span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * key: 服务名称</span></span><br><span class="line"><span class="comment">     * value: 权重</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Map&lt;String, Integer&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> Service <span class="title function_">chooseOne</span><span class="params">(List&lt;Service&gt; services)</span> &#123;</span><br><span class="line">        services.forEach(service -&gt; map.computeIfAbsent(service.toString(), key -&gt; service.getWeight()));</span><br><span class="line">        <span class="type">Service</span> <span class="variable">maxWeightService</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">weightSum</span> <span class="operator">=</span> services.stream().mapToInt(Service::getWeight).sum();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Service service : services) &#123;</span><br><span class="line">            <span class="type">Integer</span> <span class="variable">currentWeight</span> <span class="operator">=</span> map.get(service.toString());</span><br><span class="line">            <span class="keyword">if</span> (maxWeightService == <span class="literal">null</span> || currentWeight &gt; map.get(maxWeightService.toString())) &#123;</span><br><span class="line">                maxWeightService = service;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">assert</span> maxWeightService != <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">        map.put(maxWeightService.toString(), map.get(maxWeightService.toString()) - weightSum);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Service service : services) &#123;</span><br><span class="line">            <span class="type">Integer</span> <span class="variable">currentWeight</span> <span class="operator">=</span> map.get(service.toString());</span><br><span class="line">            map.put(service.toString(), currentWeight + service.getWeight());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> maxWeightService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">C   B   A   C   B   C   C   A   B   C</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" rel="tag"># 负载均衡</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/09/03/Zookeeper%E5%AE%A2%E6%88%B7%E7%AB%AFCurator%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/" rel="prev" title="Zookeeper客户端Curator的基本操作">
+      <i class="fa fa-chevron-left"></i> Zookeeper客户端Curator的基本操作
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">负载均衡概述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.1.</span> <span class="nav-text">负载均衡的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%A7%81%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="nav-number">1.2.</span> <span class="nav-text">一些常见的负载均衡</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Nginx"><span class="nav-number">1.2.1.</span> <span class="nav-text">Nginx</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dubbo"><span class="nav-number">1.2.2.</span> <span class="nav-text">Dubbo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Feign%EF%BC%88%E9%9B%86%E6%88%90%E4%BA%86-Ribbon%EF%BC%8C%E4%B8%BB%E8%A6%81%E6%98%AF%E9%80%9A%E8%BF%87-Ribbon-%E6%9D%A5%E5%AE%9E%E7%8E%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">Feign（集成了 Ribbon，主要是通过 Ribbon 来实现负载均衡）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">实现负载均衡算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E5%85%A8%E9%9A%8F%E6%9C%BA"><span class="nav-number">2.1.</span> <span class="nav-text">完全随机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E6%9D%83%E9%9A%8F%E6%9C%BA"><span class="nav-number">2.2.</span> <span class="nav-text">加权随机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AE%E8%AF%A2"><span class="nav-number">2.3.</span> <span class="nav-text">轮询</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E6%9D%83%E8%BD%AE%E8%AF%A2"><span class="nav-number">2.4.</span> <span class="nav-text">加权轮询</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B3%E6%BB%91%E5%8A%A0%E6%9D%83%E8%BD%AE%E8%AF%A2"><span class="nav-number">2.5.</span> <span class="nav-text">平滑加权轮询</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Three Water"
+      src="/uploads/avatar.JPG">
+  <p class="site-author-name" itemprop="name">Three Water</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Yessirskiiiiii" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Yessirskiiiiii" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+	
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Three Water</span>
+</div>
+
+<span id="sitetime"></span>
+<script language=javascript>
+	function siteTime(){
+		window.setTimeout("siteTime()", 1000);
+		var seconds = 1000;
+		var minutes = seconds * 60;
+		var hours = minutes * 60;
+		var days = hours * 24;
+		var years = days * 365;
+		var today = new Date();
+		var todayYear = today.getFullYear();
+		var todayMonth = today.getMonth()+1;
+		var todayDate = today.getDate();
+		var todayHour = today.getHours();
+		var todayMinute = today.getMinutes();
+		var todaySecond = today.getSeconds();
+		/* 
+		Date.UTC() -- 返回date对象距世界标准时间(UTC)1970年1月1日午夜之间的毫秒数(时间戳)
+		year - 作为date对象的年份，为4位年份值
+		month - 0-11之间的整数，做为date对象的月份
+		day - 1-31之间的整数，做为date对象的天数
+		hours - 0(午夜24点)-23之间的整数，做为date对象的小时数
+		minutes - 0-59之间的整数，做为date对象的分钟数
+		seconds - 0-59之间的整数，做为date对象的秒数
+		microseconds - 0-999之间的整数，做为date对象的毫秒数
+        */
+		var t1 = Date.UTC(2022,05,17,12,00,00); 
+		var t2 = Date.UTC(todayYear,todayMonth,todayDate,todayHour,todayMinute,todaySecond);
+		var diff = t2-t1;
+		var diffYears = Math.floor(diff/years);
+		var diffDays = Math.floor((diff/days)-diffYears*365);
+		var diffHours = Math.floor((diff-(diffYears*365+diffDays)*days)/hours);
+		var diffMinutes = Math.floor((diff-(diffYears*365+diffDays)*days-diffHours*hours)/minutes);
+		var diffSeconds = Math.floor((diff-(diffYears*365+diffDays)*days-diffHours*hours-diffMinutes*minutes)/seconds);
+		document.getElementById("sitetime").innerHTML=" 已安全运行 "+/*diffYears+"年 "+*/diffDays+" 天 "+diffHours+" 小时 "+diffMinutes+" 分钟 "+diffSeconds+" 秒";
+	}
+	siteTime();
+</script>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
