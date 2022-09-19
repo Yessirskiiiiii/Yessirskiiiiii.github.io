@@ -28,7 +28,7 @@
 <meta property="og:description" content="在写 RPC 启动项的时候遇到了负载均衡算法的问题，因此在这系统性地整理一下这些算法。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-09-08T07:17:29.000Z">
-<meta property="article:modified_time" content="2022-09-15T13:01:22.262Z">
+<meta property="article:modified_time" content="2022-09-19T10:22:51.103Z">
 <meta property="article:author" content="Three Water">
 <meta property="article:tag" content="负载均衡">
 <meta name="twitter:card" content="summary">
@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-09-15 21:01:22" itemprop="dateModified" datetime="2022-09-15T21:01:22+08:00">2022-09-15</time>
+                <time title="修改时间：2022-09-19 18:22:51" itemprop="dateModified" datetime="2022-09-19T18:22:51+08:00">2022-09-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -303,7 +303,7 @@
 
 <p>优点：可以将不同机器的性能问题纳入到考量范围，集群性能最优最大化</p>
 <p>缺点：生产环境复杂多变，服务器抗压能力也无法精确估算，静态算法导致无法实时动态调整节点权重，只能粗糙优化；同时根据测试结果来看，该算法先轮询 A 服务器，再轮询 B 服务器，再轮询 C 服务器，所以他在一段时间内去请求的服务器永远是一个，当某个服务器权重过大会造成该服务器压力比较大</p>
-<h2 id="平滑加权轮询"><a href="#平滑加权轮询" class="headerlink" title="平滑加权轮询"></a>平滑加权轮询</h2><p>平滑加权轮询会把轮询的请求打散，让每个服务器都比较均衡地获得请求，避免了同一个时刻大量请求打入，使请求更加 <strong>平衡</strong></p>
+<h2 id="平滑加权轮询"><a href="#平滑加权轮询" class="headerlink" title="平滑加权轮询"></a>平滑加权轮询</h2><p>平滑加权轮询会把轮询的请求 <strong>打散</strong>，让每个服务器都比较均衡地获得请求，避免了同一个时刻大量请求打入，使请求更加 <strong>平衡</strong></p>
 <p>假设有 N 台服务器 S &#x3D; {S0, S1, S2, …, Sn}，默认权重为 W &#x3D; {W0, W1, W2, …, Wn}，当前权重为 CW &#x3D; {CW0, CW1, CW2, …, CWn}。在该算法中有两个权重，默认权重表示服务器的原始权重，当前权重表示每次访问后重新计算的权重，当前权重的出初始值为默认权重值，当前权重值最大的服务器为 maxWeightService，所有默认权重之和为 weightSum，服务器列表为 list，算法可以描述为：</p>
 <ol>
 <li>找出当前权重值最大的服务器 maxWeightService；</li>
